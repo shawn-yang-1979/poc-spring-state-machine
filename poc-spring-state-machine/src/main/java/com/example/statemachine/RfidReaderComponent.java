@@ -32,6 +32,7 @@ public class RfidReaderComponent extends StateMachineListenerAdapter<States, Eve
 			reader1.getStateMachine().addStateListener(this);
 			reader1.setEnabled(true);
 			reader1.setHost("192.168.10.1");
+			reader1.getStateMachine().start();
 			deviceById.put(1l, reader1);
 
 			RfidReader reader2 = new RfidReader();
@@ -39,6 +40,7 @@ public class RfidReaderComponent extends StateMachineListenerAdapter<States, Eve
 			reader2.getStateMachine().addStateListener(this);
 			reader2.setEnabled(true);
 			reader2.setHost("192.168.10.2");
+			reader2.getStateMachine().start();
 			deviceById.put(2l, reader2);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -113,7 +115,10 @@ public class RfidReaderComponent extends StateMachineListenerAdapter<States, Eve
 
 	@Override
 	public void stateChanged(State<States, Events> from, State<States, Events> to) {
-		log.info("from " + from.getId());
-		log.info("to " + to.getId());
+		if (from != null) {
+			log.info("State changed from {} to {}.", from.getId(), to.getId());
+		} else {
+			log.info("State started at {}.", to.getId());
+		}
 	}
 }

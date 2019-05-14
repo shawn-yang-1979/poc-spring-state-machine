@@ -16,9 +16,6 @@ public class RfidReader {
 	@Setter
 	private boolean enabled;
 	@Getter
-	@Setter
-	private boolean health;
-	@Getter
 	private StateMachine<States, Events> stateMachine;
 	@Setter
 	private RfidReaderCallback callback;
@@ -26,27 +23,40 @@ public class RfidReader {
 	public RfidReader() {
 		super();
 		this.stateMachine = new DeviceStateMachineBuilder()//
+				.logger(log)//
 				.onlineEntry(this::setOnline)//
-				.onlineExit(this::setOffline)//
-				.initializing(this::connect, this::disconnect)//
-				.uninitializing(this::disconnect)//
-				.removing(this::disconnect)//
+				.onlineHealthChecking(this::checkHealth)//
+				.onlineExit(this::resetHealthState)//
+				.removingDo(this::disconnect)//
+				.uninitializedEntry(this::setOffline)//
+				.uninitializingDo(this::disconnect)//
+				.initializingDo(this::connect)//
 				.build();
-		stateMachine.start();
+	}
+
+	public void checkHealth() {
+		log.info("checking health");
+		throw new RuntimeException("Not healthy");
+	}
+
+	public void resetHealthState() {
+		log.info("Reset health state");
 	}
 
 	public void setOffline() {
+		log.info("Set offline");
 		callback.offline(host);
 	}
 
 	public void setOnline() {
+		log.info("Set online");
 		callback.online(host);
 	}
 
 	public void connect() {
 		log.info("Connecting RFID reader");
 		try {
-			Thread.sleep(10000);
+			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 			// ignore
 		}
